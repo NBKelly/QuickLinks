@@ -1,3 +1,5 @@
+package quicklinks;
+
 public class Node {
     int id;
     int target;
