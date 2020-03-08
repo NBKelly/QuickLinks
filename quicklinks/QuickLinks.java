@@ -1,7 +1,10 @@
+package quicklinks;
+
 import java.math.BigInteger;
 import java.lang.StringBuilder;
 import java.util.*;
-
+import quicklinks.Loop;
+    
 public class QuickLinks {
     //If you are lost, your code probably begins on line 77
     static Scanner sc = new Scanner(System.in);
@@ -120,14 +123,17 @@ public class QuickLinks {
 		DEBUG("CHAIN SIZE: " + chain.size() + ", CHAIN START: " + iDex);
 
 		List<Node> loop = chain.subList(iDex + 1, chain.size());
+
+		DEBUG("Making loop");
+		Loop myLoop = new Loop((ArrayList)loop, DEBUG);
 		
-		if(DEBUG) {
+		/*if(DEBUG) {
 		    StringBuilder chainStr = new StringBuilder();
 		    for(Node n : loop)
 			chainStr.append(n.toChain(true));
 		    
 		    DEBUG(chainStr.toString());
-		}
+		    }*/
 	    }
 	}
 
