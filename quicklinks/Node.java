@@ -1,6 +1,6 @@
 package quicklinks;
 
-public class Node {
+public class Node implements Comparable<Node> {
     int id;
     int target;
 
@@ -28,5 +28,12 @@ public class Node {
 	    res += " -> ";
 
 	return res;
+    }
+
+    public int compareTo(Node t) {
+	if(t == null)
+	    return -99;
+	
+	return t.id - id;
     }
 }
