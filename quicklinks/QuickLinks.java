@@ -125,6 +125,7 @@ public class QuickLinks {
 
 	boolean[] visited = new boolean[num_nodes];
 	boolean[] looped = new boolean[num_nodes];
+	Loop[] loops = new Loop[num_nodes];
 	
 	for(int index = 0; index < num_nodes; index++) {
 	    //given any node, we can follow it through until we build a loop
@@ -159,28 +160,50 @@ public class QuickLinks {
 			DEBUG("CHAIN: " + chainStr.toString());
 		    }
 		    
-		    DEBUG("Making loop");
 		    Loop myLoop = new Loop(loop, DEBUG);
-		    DEBUG("Loop Made");
+		    
+		    for(Node n : loop)
+			loops[n.getID()] = myLoop;
+
+		    //associate ancestors with our loop
+		    myLoop.associateAncestors(ancestors, DEBUG);
 		}
 	    }
 	}
 
 	
 	t.split("PROCESS SCENARIOS");
+
+	//step one is to go scenario by scenario
+	for(int scenario = 0; scenario < num_scenarios; scenario++) {
+	    int source = nextInt();
+	    int target = nextInt();
+
+	    DEBUGF("%nProcessing link from %d to %d%n", source, target);
+	    
+	    //there are several assumptions that may be made:	    
+	    if(loops[source] != null && loops[target] != null && loops[target] != loops[source]) {
+		//if the origin and target node are from different loops, there can be no match
+		println("-1");
+	    }
+	    else if(loops[source] != null && loops[target] != null && loops[target] == loops[source]) {
+		//if the origin and target node are from the same loop, there is an O(1) search
+		println(loops[source].dist(nodes[source], nodes[target]));
+	    }
+	    else if(loops[source] != null && loops[target] == null) {
+		//if the origin is from a loop and the target isn't, there can be no match
+		println("-1");
+	    }
+	    else {
+		println(99);
+		
+		//if the origin is not from a loop, but target is, then we must search ALL ancestors of loop
+		//if both nodes are outside of loops, then the search is simple
+	    }
+	    t.split("FINISHED PROCESSING SCENARIO " + scenario);
+	}
 	
 	t.total("Finished processing of file. ");
-	/**
-	 *  Timer t = new Timer().start();
-	 *  
-	 *  while(hasNextInt()) {
-	 *      t.split("Started scenario at " + line);
-	 *
-	 *      //your logic here
-	 *  }
-	 *  
-	 *  t.total("Finished processing of file. 
-	 */
     }
 
 
