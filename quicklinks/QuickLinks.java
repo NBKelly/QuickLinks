@@ -197,8 +197,13 @@ public class QuickLinks {
 	    else {
 		println(99);
 		
-		//if the origin is not from a loop, but target is, then we must search ALL ancestors of loop
-		//if both nodes are outside of loops, then the search is simple
+		//if the origin is not from a loop, but target is, then we must search ALL ancestors of loop.
+		//either one of the ancestors of the target is the origin, or the result is -1
+		//further, if more than 100 nodes in a row are indexed,
+		//then we can make a chain and cache the result
+
+		//if both nodes are outside of loops, then the search is simple. Follow the target to either
+		//the root or the origin. There must be a fast way of doing this?
 	    }
 	    t.split("FINISHED PROCESSING SCENARIO " + scenario);
 	}
