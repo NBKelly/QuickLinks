@@ -1,15 +1,15 @@
 package quicklinks;
 
 import java.util.TreeMap;
-import java.util.ArrayList;
+import java.util.List;
 
 public class Loop {
     //what we want is a set of nodes in the format: node -> index, which can be accessed from just a node
     //given any two nodes, we should be able to figure out the distance between them at O(1)
     TreeMap<Node, Integer> nodes;
     int size = 0;
-    public Loop(ArrayList<Node> nodeList, boolean debug) {
-	System.out.println("DB: " + debug);
+
+    public Loop(List<Node> nodeList, boolean debug) {
 	nodes = new TreeMap<>();
 	int index = 0;
 
@@ -18,11 +18,13 @@ public class Loop {
 	
 	if(debug)
 	    System.err.println("Loop starting at node " + nodeList.get(0).getID());
+	
 	for(Node n : nodeList) {
 	    //not sure if we need to start at 0 or 1
-	    nodes.put(n, ++index);
 	    if(debug)
-		System.err.printf("%d (%d) ---> ", n.getID(), index);
+		System.err.printf("%d (%d) ---> ", n.getID(), index + 1);
+	    nodes.put(n, ++index);
+		
 	}
 
 	if(debug)
