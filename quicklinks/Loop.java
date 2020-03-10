@@ -71,8 +71,6 @@ public class Loop {
 	int end = nodes.get(d);
 	int dist = end - start;
 
-	System.err.printf("%d, %d, %d: ", start, end, dist);
-	
 	if(dist < 0)
 	    dist = size + dist;
 
