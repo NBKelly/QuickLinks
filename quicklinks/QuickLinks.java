@@ -88,8 +88,34 @@ public class QuickLinks {
 	    nodes[i] = new Node(i, nextInt());
 	    DEBUG(nodes[i].toString());
 	}
+
+	DEBUGLINE();
 	
+	//inverted node list
+	ArrayList<TreeSet<Node>> ancestors = new ArrayList<TreeSet<Node>>(num_nodes);
+	for(int i = 0; i < num_nodes; i++)
+	    ancestors.add(null);
 	
+	for(int i = 0; i < num_nodes; i++) {
+	    Node c = nodes[i];
+	    int target = c.getTarget();
+	    if(ancestors.get(target) == null)
+		ancestors.set(target, new TreeSet<Node>());
+	    ancestors.get(target).add(c);
+	}
+
+	if(DEBUG) {
+	    for(int i = 0; i < num_nodes; i++) {
+		DEBUGF("Ancestors of %d: ", i);
+		if(ancestors.get(i) != null) {
+		    for(Node n : ancestors.get(i))
+			DEBUGF("%d ", n.getID());		    
+		}
+		DEBUG();
+	    }
+	}
+
+	DEBUGLINE();
 	t.split("PROCESS NODES");
 
 	//here is an algorithm:
@@ -122,18 +148,21 @@ public class QuickLinks {
 		int iDex = chain.indexOf(chain.get(chain.size() - 1));
 		DEBUG("CHAIN SIZE: " + chain.size() + ", CHAIN START: " + iDex);
 
-		List<Node> loop = chain.subList(iDex + 1, chain.size());
-
-		DEBUG("Making loop");
-		Loop myLoop = new Loop((ArrayList)loop, DEBUG);
 		
-		/*if(DEBUG) {
-		    StringBuilder chainStr = new StringBuilder();
-		    for(Node n : loop)
-			chainStr.append(n.toChain(true));
+		List<Node> loop = chain.subList(iDex + 1, chain.size());
+		if(loop.size() > 0) {    
+		    if(DEBUG) {
+			StringBuilder chainStr = new StringBuilder();
+			for(Node n : loop)
+			    chainStr.append(n.toChain(true));
+			
+			DEBUG("CHAIN: " + chainStr.toString());
+		    }
 		    
-		    DEBUG(chainStr.toString());
-		    }*/
+		    DEBUG("Making loop");
+		    Loop myLoop = new Loop(loop, DEBUG);
+		    DEBUG("Loop Made");
+		}
 	    }
 	}
 
@@ -171,7 +200,7 @@ public class QuickLinks {
 	for(int i = 0; i < argv.length; i++) {
 	    switch(argv[i]) {
 	    case "-se" : IGNORE_UNCLEAN = false; break;
-	    case "-d"  : DEBUG = true;
+	    case "-d"  : DEBUG = true; IGNORE_UNCLEAN = false;
 	    case "-t"  : TIMER = true; break;
 	    case "-dt" :
 		Scanner tst = null;
@@ -223,7 +252,7 @@ public class QuickLinks {
 		DEBUG("Program terminated at line '" + line +"'");
 	    
 	    DEBUG("Clean exit: " + clean_exit);
-	    if(!(clean_exit || IGNORE_UNCLEAN))
+	    if(!clean_exit && !IGNORE_UNCLEAN)
 		exception.printStackTrace();
 	}
     }
@@ -565,6 +594,16 @@ public class QuickLinks {
 	if(DEBUG) System.err.println();
     }
 
+    private static void DEBUGF(String arg, Object... args) {
+	if(DEBUG) System.err.printf(arg, args);
+    }
+
+    private static void DEBUGLINE() {
+	DEBUG();
+	DEBUG("--------------------------------------");
+	DEBUG();
+    }
+    
     public static void TEBUG(Object output) {
 	if(TIMER || DEBUG) System.err.println(output.toString());
     }
