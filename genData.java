@@ -1,10 +1,9 @@
 import java.util.*;
     
 public class genData {
-
     public static void main(String[] args) {
-	int num_nodes = 12;
-	int num_scenarios = 4;
+	int num_nodes = 100000;
+	int num_scenarios = 100000;
 	Random rand = new Random();
 	System.out.printf("%d %d%n", num_nodes, num_scenarios);
 	for(int i = 0; i < num_nodes; i++) {

@@ -126,6 +126,7 @@ public class QuickLinks {
 	boolean[] visited = new boolean[num_nodes];
 	boolean[] looped = new boolean[num_nodes];
 	Loop[] loops = new Loop[num_nodes];
+	ArrayList<Loop> loopList = new ArrayList<Loop>();
 	
 	for(int index = 0; index < num_nodes; index++) {
 	    //given any node, we can follow it through until we build a loop
@@ -147,7 +148,7 @@ public class QuickLinks {
 		//once all loops are assembled, we can get to work on building ancestor chains for
 		//all non-looped components
 		int iDex = chain.indexOf(chain.get(chain.size() - 1));
-		DEBUG("CHAIN SIZE: " + chain.size() + ", CHAIN START: " + iDex);
+		//DEBUG("CHAIN SIZE: " + chain.size() + ", CHAIN START: " + iDex);
 
 		
 		List<Node> loop = chain.subList(iDex + 1, chain.size());
@@ -167,10 +168,35 @@ public class QuickLinks {
 
 		    //associate ancestors with our loop
 		    myLoop.associateAncestors(ancestors, DEBUG);
+		    loopList.add(myLoop);
 		}
 	    }
 	}
 
+	TreeNode[] treeNodes = new TreeNode[num_nodes];
+	ArrayList<NodeTree> nodeTrees = new ArrayList<>();
+	for(Loop loop : loopList) {
+	    //get the set of all ancestors for our loop
+	    Set<Node> loopAncestors = loop.getAncestors();
+	    //given that we know the loop, we can then get started on constructing some chains?
+	    //No, let's just make a full tree
+	    //we build this tree from the ground up
+	    //each element in the tree should know it's height
+	    //each element in the tree should know the identity of the tree (maybe)
+	    //each element can only be in ONE tree (wowzers)
+	    for(Node n : loopAncestors) {
+		NodeTree tree = new NodeTree(loop);
+		tree.assemble(n, ancestors);
+		for(TreeNode tn : tree.getNodes()) {
+		    treeNodes[tn.getNode().getID()] = tn;
+		    /*DEBUGF("NODE %d HEIGHT %d TREE %d CHILD %d%n", tn.getNode().getID(),
+			   tn.getHeight(), tn.getID(), tn.getChild() != null ? tn.getChild().getNode().getID()
+			   : -1);*/
+		}
+
+		nodeTrees.add(tree);
+	    }
+	}
 	
 	t.split("PROCESS SCENARIOS");
 
@@ -179,23 +205,92 @@ public class QuickLinks {
 	    int source = nextInt();
 	    int target = nextInt();
 
-	    DEBUGF("%nProcessing link from %d to %d%n", source, target);
-	    
-	    //there are several assumptions that may be made:	    
-	    if(loops[source] != null && loops[target] != null && loops[target] != loops[source]) {
+	    //DEBUGF("%nProcessing link from %d to %d%n", source, target);
+
+	    //there are several assumptions that may be made:
+	    if(source == target)
+		//the path from any node to itself is 0
+		println(0);
+	    else if(loops[source] != null && loops[target] != null && loops[target] != loops[source]) {
 		//if the origin and target node are from different loops, there can be no match
+		//DEBUG("targets from different loops");
 		println("-1");
 	    }
 	    else if(loops[source] != null && loops[target] != null && loops[target] == loops[source]) {
+		//DEBUG("targets from the same loop");
 		//if the origin and target node are from the same loop, there is an O(1) search
 		println(loops[source].dist(nodes[source], nodes[target]));
 	    }
 	    else if(loops[source] != null && loops[target] == null) {
 		//if the origin is from a loop and the target isn't, there can be no match
+		//DEBUG("Path from loop to tree");
 		println("-1");
+	    }
+	    else if(loops[target] != null && loops[source] ==null) {
+		//we are 100% sure that there should be an associated treenode
+		TreeNode tn = treeNodes[source];
+		//figure out which tree it belongs to
+		NodeTree destTree = tn.getTree();
+		//figure out the destination loop
+		Loop destLoop = destTree.getLoop();
+
+		//the things are from different loops
+		if(destLoop != loops[target]) {
+		    //DEBUG("items from different loops after tree traversal");
+		    println(-1);
+		    continue;
+		}
+
+		//now we need to find out how to get ourselves in to the loop to do some of that math
+		Node fin = destTree.getHead();
+
+		//now we find the dist within the loop
+		int height = loops[target].dist(nodes[fin.getTarget()], nodes[target]);
+		//DEBUG("HEIGHT: " + height);
+
+		height += tn.getHeight();
+		//DEBUG("HEIGHT REVISED: " + height);
+		//DEBUG("path from tree to loop");
+		println(height);
+	    }
+	    else if(loops[target] == null && loops[source] == null) {
+		//check if both of the things are from the same tree
+		TreeNode src = treeNodes[source];
+		TreeNode dst = treeNodes[target];
+
+		if(src.getID() != dst.getID()) {
+		    //DEBUG("trees do not match");
+		    println(-1);
+		    continue;
+		}
+
+		//now we need to ensure that the src is at a higher level than the dst
+		else if(src.getHeight() <= dst.getHeight()) {
+		    //DEBUG("incompatible heights");
+		    println(-1);
+		    continue;
+		}
+		else {
+		    int start_height = src.getHeight();
+		    while(src.getHeight() > dst.getHeight()) {
+			src = src.getChild();		    
+		    }
+		    
+		    if(src != dst) {
+			//DEBUG("incompatible heights after traversal");
+			println(-1);
+		    }
+		    else {
+			//DEBUG("Height after traversal");
+			println(start_height - dst.getHeight());
+		    }
+		}			
 	    }
 	    else {
 		println(99);
+		//if the origin is part of a tree, and the target is part of a loop, we can confirm the
+		//existence of a connection on o(1), then solve it in the speed of a loop lookup
+		
 		
 		//if the origin is not from a loop, but target is, then we must search ALL ancestors of loop.
 		//either one of the ancestors of the target is the origin, or the result is -1
@@ -204,6 +299,10 @@ public class QuickLinks {
 
 		//if both nodes are outside of loops, then the search is simple. Follow the target to either
 		//the root or the origin. There must be a fast way of doing this?
+
+		//fast way of doing this: we produce CHAINS
+		//how does a chain work? a chain is a collection of nodes(treemap(node, index)), which can be
+		//checked at O(1) through our list structure. Processing a chain is linear time.
 	    }
 	    t.split("FINISHED PROCESSING SCENARIO " + scenario);
 	}
@@ -213,16 +312,28 @@ public class QuickLinks {
 
 
 
-    
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+	
     /* ^^^^ YOUR WORK
      *
      * LIB IMPLEMENTATIONS BELOW HERE
      * 
      * vvvv NOT YOUR WORk
      */
-
-
-
     
     public static void main(String[] argv) {
 	for(int i = 0; i < argv.length; i++) {

@@ -3,6 +3,7 @@ package quicklinks;
 import java.util.TreeSet;
 import java.util.TreeMap;
 import java.util.List;
+import java.util.Set;
 
 public class Loop {
     //what we want is a set of nodes in the format: node -> index, which can be accessed from just a node
@@ -14,6 +15,10 @@ public class Loop {
     
     int size = 0;
     int ancestorCount = 0;
+
+    public Set<Node> getAncestors() {
+	return ancestors.keySet();
+    }
     
     public Loop(List<Node> nodeList, boolean debug) {
 	nodes = new TreeMap<>();
@@ -67,6 +72,9 @@ public class Loop {
     }
     
     public int dist(Node s, Node d) {
+	if(s == d)
+	    return 0;
+	
 	int start = nodes.get(s);
 	int end = nodes.get(d);
 	int dist = end - start;
