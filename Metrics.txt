@@ -2,58 +2,70 @@ data2/001-small.001-simple-1.in
 Nodes Scenarios
 3 6
 0.151653051376
+0 differences
 
 data2/001-small.002-medium-loop.in
 Nodes Scenarios
 10 90
 0.200586795807
+0 differences
 
 data2/001-small.003-disconnected.in
 Nodes Scenarios
 10 90
 0.204934978485
+0 differences
 
 data2/002-gen-small.001-random-n-10.in
 Nodes Scenarios
 10 10
 0.156833171844
+0 differences
 
 data2/004-gen-large.001-random-n-1e4.in
 Nodes Scenarios
 10000 10000
 1.24101605415
+0 differences
 
 data2/004-gen-large.002-line-n-1e4.in
 Nodes Scenarios
 10000 10000
 1.1829515934
+0 differences
 
 data2/004-gen-large.003-cycle-n-1e4.in
 Nodes Scenarios
 10000 10000
 1.18240661621
+0 differences
 
 data2/004-gen-large.004-broom-n-1e5.in
 Nodes Scenarios
 100000 100000
 17.2362298489
+0 differences
 
 data2/004-gen-large.005-thorns-n-1e5.in
 Nodes Scenarios
 100000 100000
 21.8157830238
+0 differences
 
 data2/004-gen-large.006-thorns-cycle-n-1e5.in
 Nodes Scenarios
 100000 100000
 16.443973732
+0 differences
 
 data2/004-gen-large.007-tree-1e5.in
 Nodes Scenarios
 100000 100000
 15.9611817837
+0 differences
 
 data2/004-gen-large.008-triangle-1e5.in
 Nodes Scenarios
 100000 100000
 15.944163847
+0 differences
