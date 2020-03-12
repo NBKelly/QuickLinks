@@ -38,7 +38,7 @@ public class NodeTree {
     }
     
     public void assemble(Node node, ArrayList<TreeSet<Node>> ancestors) {
-	head = new TreeNode(ID, node, 1, null, this, 0);	
+	head = new TreeNode(ID, node, 1, null, this, 0, 0);	
 	assemble_inline(head, 1, ancestors, width);
     }
 
@@ -49,6 +49,7 @@ public class NodeTree {
 	int pass = 0;
 	while(true) {
 	    nodes.add(node);
+	    int offset = node.getOffset();
 	    int identity = node.getNode().getID();
 	    TreeSet<Node> idAncestors = ancestors.get(identity);
 	    //System.err.println("Assemble at width " + width + ", pass " + pass++);
@@ -57,7 +58,7 @@ public class NodeTree {
 		int width_ext = 0;
 		for(Node n : idAncestors) {
 		    if(width_ext == 0) {
-			TreeNode next = new TreeNode(ID, n, height + 1, node, this, _width);
+			TreeNode next = new TreeNode(ID, n, height + 1, node, this, _width, offset);
 			if(first) {
 			    branch.add(next);
 			    first = false;
@@ -66,7 +67,7 @@ public class NodeTree {
 		    }
 		    else {
 			width = width + 1;
-			TreeNode next = new TreeNode(ID, n, height + 1, node, this, width);
+			TreeNode next = new TreeNode(ID, n, height + 1, node, this, width, offset + 1);
 			branch.add(next);
 			//branch.put(width, next);
 			deck.add(next);
@@ -134,7 +135,7 @@ public class NodeTree {
 	if(origin.getWidth() == destination.getWidth()) {
 	    return origin.getHeight() - destination.getHeight();
 	}
-
+	
 	int original_height = origin.getHeight();
 
 	while(origin.getWidth() > destination.getWidth() && origin.getHeight() > destination.getHeight()) {
@@ -145,8 +146,14 @@ public class NodeTree {
 
 	    //another way to cut this short: if the difference in width is greater than the difference in height
 	    //this can save us significant time in some scenarios
-	    if(origin.getHeight() - destination.getHeight() < origin.getWidth() - destination.getWidth())
-		return -6;
+	    /*if(origin.getHeight() - destination.getHeight() < origin.getWidth() - destination.getWidth())
+	      return -6;*/
+
+	    if(origin.getOffset() < destination.getOffset())
+		return -1;
+
+	    if(origin.getOffset() <= destination.getOffset() && origin.getWidth() != destination.getWidth())
+		return -1;
 	}
 
 	if(origin.getWidth() == destination.getWidth() && origin.getHeight() >= destination.getHeight())

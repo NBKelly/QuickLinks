@@ -9,14 +9,16 @@ public class TreeNode {
     private Node node;
     private NodeTree tree;
     private int width;
+    private int offset = 0;
     
-    public TreeNode(int ID, Node node, int height, TreeNode child, NodeTree tree, int width) {
+    public TreeNode(int ID, Node node, int height, TreeNode child, NodeTree tree, int width, int offset) {
 	this.ID = ID;
 	this.node = node;
 	this.height = height;
 	this.child = child;
 	this.tree = tree;
 	this.width = width;
+	this.offset = offset;
     }
 
     public int getWidth() {
@@ -41,5 +43,9 @@ public class TreeNode {
 
     public NodeTree getTree() {
 	return tree;
+    }
+
+    public int getOffset() {
+	return offset;
     }
 }
