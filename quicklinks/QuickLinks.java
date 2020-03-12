@@ -4,7 +4,7 @@ import java.math.BigInteger;
 import java.lang.StringBuilder;
 import java.util.*;
 import quicklinks.Loop;
-    
+import java.util.stream.*;    
 public class QuickLinks {
     //If you are lost, your code probably begins on line 77
     static Scanner sc = new Scanner(System.in);
@@ -90,7 +90,7 @@ public class QuickLinks {
 	}
 
 	DEBUGLINE();
-	
+	TEBUG("Associating ancestors");
 	//inverted node list
 	ArrayList<TreeSet<Node>> ancestors = new ArrayList<TreeSet<Node>>(num_nodes);
 	for(int i = 0; i < num_nodes; i++)
@@ -123,10 +123,15 @@ public class QuickLinks {
 	//  * we need to identify loops
 	//  * we need to identify paths leading to loops
 
+	TEBUG("Allocating array space");
 	boolean[] visited = new boolean[num_nodes];
 	boolean[] looped = new boolean[num_nodes];
 	Loop[] loops = new Loop[num_nodes];
 	ArrayList<Loop> loopList = new ArrayList<Loop>();
+	int[] loopIndex = new int[num_nodes];
+	TreeNode[] treeNodes = new TreeNode[num_nodes];
+	ArrayList<NodeTree> nodeTrees = new ArrayList<>();
+	TEBUG("Arrays allocated");
 	
 	for(int index = 0; index < num_nodes; index++) {
 	    //given any node, we can follow it through until we build a loop
@@ -134,6 +139,8 @@ public class QuickLinks {
 	    //every node will always terminate in a loop
 	    ArrayList<Node> chain = new ArrayList<Node>();
 	    int position = index;
+	    if(DEBUG)
+		DEBUGF("PROCESSING NODE %d%n", index);
 	    
 	    while(!visited[position]) {
 		visited[position] = true;
@@ -149,7 +156,6 @@ public class QuickLinks {
 		//all non-looped components
 		int iDex = chain.indexOf(chain.get(chain.size() - 1));
 		//DEBUG("CHAIN SIZE: " + chain.size() + ", CHAIN START: " + iDex);
-
 		
 		List<Node> loop = chain.subList(iDex + 1, chain.size());
 		if(loop.size() > 0) {    
@@ -161,21 +167,34 @@ public class QuickLinks {
 			DEBUG("CHAIN: " + chainStr.toString());
 		    }
 		    
-		    Loop myLoop = new Loop(loop, DEBUG);
+		    //Loop myLoop = new Loop(loop, DEBUG);
+		    Loop loop2 = new Loop(loop.size());
+		    int idx = 1;
 		    
-		    for(Node n : loop)
-			loops[n.getID()] = myLoop;
+		    for(Node n : loop) {
+			//get the id of the node
+			int nID = n.getID();
+			//set the index of this node in the loop
+			loopIndex[nID] = idx++;
+			//associate the parent loop of the node
+			loops[nID] = loop2;
+			//associate all the ancestors of this loop
+			TreeSet<Node> ancestorSet = ancestors.get(nID);
+			DEBUG("Ancestors: " + ancestorSet.size());
+			if(ancestorSet != null)
+			    loop2.associateAncestors(ancestorSet);
+		    }
 
-		    //associate ancestors with our loop
-		    myLoop.associateAncestors(ancestors, DEBUG);
-		    loopList.add(myLoop);
+		    loopList.add(loop2);
 		}
 	    }
 	}
 
-	TreeNode[] treeNodes = new TreeNode[num_nodes];
-	ArrayList<NodeTree> nodeTrees = new ArrayList<>();
+
+	DEBUG("Constructing Trees");
+		
 	for(Loop loop : loopList) {
+	    DEBUG("Constructing tree for specified loop");
 	    //get the set of all ancestors for our loop
 	    Set<Node> loopAncestors = loop.getAncestors();
 	    //given that we know the loop, we can then get started on constructing some chains?
@@ -185,13 +204,16 @@ public class QuickLinks {
 	    //each element in the tree should know the identity of the tree (maybe)
 	    //each element can only be in ONE tree (wowzers)
 	    for(Node n : loopAncestors) {
+		if(loops[n.getID()] != null)
+		    continue;
 		NodeTree tree = new NodeTree(loop);
+		DEBUG("Assembling tree");
 		tree.assemble(n, ancestors);
 		for(TreeNode tn : tree.getNodes()) {
 		    treeNodes[tn.getNode().getID()] = tn;
-		    /*DEBUGF("NODE %d HEIGHT %d TREE %d CHILD %d%n", tn.getNode().getID(),
+		    DEBUGF("NODE %d HEIGHT %d TREE %d CHILD %d WIDTH %d%n", tn.getNode().getID(),
 			   tn.getHeight(), tn.getID(), tn.getChild() != null ? tn.getChild().getNode().getID()
-			   : -1);*/
+			   : -1, tn.getWidth());
 		}
 
 		nodeTrees.add(tree);
@@ -200,33 +222,157 @@ public class QuickLinks {
 	
 	t.split("PROCESS SCENARIOS");
 
-	//step one is to go scenario by scenario
+	int[] sc_a = new int[num_scenarios];
+	int[] sc_b = new int[num_scenarios];
+	int[] results = new int[num_scenarios];
+	
 	for(int scenario = 0; scenario < num_scenarios; scenario++) {
 	    int source = nextInt();
 	    int target = nextInt();
-
-	    //DEBUGF("%nProcessing link from %d to %d%n", source, target);
-
+	    
+	    sc_a[scenario] = source;
+	    sc_b[scenario] = target;
+	}
+	
+	IntStream.range(0, num_scenarios)
+	    .parallel()
+	    .forEach(i -> {
+		    int source = sc_a[i];
+		    int target = sc_b[i];
+		    if(source == target) {
+			//the path from any node to itself is 0
+			results[i] = 0;
+			return;
+		    }
+		    else if(loops[source] != null && loops[target] != null && loops[target] != loops[source]) {
+			//if the origin and target node are from different loops, there can be no match
+			//DEBUG("targets from different loops");
+			results[i] = -1;
+			return;
+			//println("-1");
+		    }
+		    else if(loops[source] != null && loops[target] != null && loops[target] == loops[source]) {
+			//DEBUG("targets from the same loop");
+			//if the origin and target node are from the same loop, there is an O(1) search
+			//DEBUGF("S %d D %d L %d%n", loopIndex[source], loopIndex[target], loops[target].size());
+			//println(loops[source].dist(loopIndex[source], loopIndex[target]));
+			results[i] = loops[source].dist(loopIndex[source], loopIndex[target]);
+			return;
+		    }
+		    else if(loops[source] != null && loops[target] == null) {
+			//if the origin is from a loop and the target isn't, there can be no match
+			//DEBUG("Path from loop to tree");
+			//println("-1");
+			results[i] = -1;
+			return;
+		    }
+		    else if(loops[target] != null && loops[source] == null) {
+			//we are 100% sure that there should be an associated treenode
+			TreeNode tn = treeNodes[source];
+			//figure out which tree it belongs to
+			NodeTree destTree = tn.getTree();
+			//figure out the destination loop
+			Loop destLoop = destTree.getLoop();
+			
+			//the things are from different loops
+			if(destLoop != loops[target]) {
+			    //DEBUG("items from different loops after tree traversal");
+			    //println(-1);
+			    results[i] = -1;
+			    return;
+			}
+			
+			//now we need to find out how to get ourselves in to the loop to do some of that math
+			Node fin = destTree.getHead();
+			int ft = fin.getTarget();
+			
+			//now we find the dist within the loop
+			int height = loops[target].dist(loopIndex[ft], loopIndex[target]);
+			//DEBUG("HEIGHT: " + height);
+			
+			height += tn.getHeight();
+			//DEBUG("HEIGHT REVISED: " + height);
+			//DEBUG("path from tree to loop");
+			results[i] = height;
+			//println(height);
+		    }
+		    else if(loops[target] == null && loops[source] == null) {
+			//check if both of the things are from the same tree
+			TreeNode src = treeNodes[source];
+			TreeNode dst = treeNodes[target];
+			
+			if(src.getID() != dst.getID()) {
+			    //DEBUG("trees do not match");
+			    results[i] = -1;
+			    //println(-1);
+			    return;
+			}
+			
+			//now we need to ensure that the src is at a higher level than the dst
+			else if(src.getHeight() <= dst.getHeight()) {
+			    //DEBUG("incompatible heights");
+			    results[i] = -1;
+			    //println(-1);
+			    return;
+			}
+			else {
+			    //DEBUG("NEW TREE HEIGHT");
+			    int height = src.getTree().dist(src, dst);
+			    results[i] = height > -1 ? height : height;
+			    //println(height);
+			    //int start_height = src.getHeight();
+			    //  while(src.getHeight() > dst.getHeight()) {
+			    //  src = src.getChild();		    
+			    //  }
+			    //
+			    //  if(src != dst) {
+			    //  //DEBUG("incompatible heights after traversal");
+			    //  println(-1);
+			    //  }
+			    //  else {
+			    //  //DEBUG("Height after traversal");
+			    //  println(start_height - dst.getHeight());
+			    //  }
+			}			
+		    }
+		    else {
+			//we should never be able to get here
+			//println(-99);
+		    }		
+		}
+		);
+	for(int r : results)
+	    println(r);
+	t.total("Finished processing of file. ");
+	/*
+	//step one is to go scenario by scenario	
+	for(int scenario = 0; scenario < num_scenarios; scenario++) {
+	int source = nextInt();
+	int target = nextInt();
+	
+	//DEBUGF("%nProcessing link from %d to %d%n", source, target);
+	
 	    //there are several assumptions that may be made:
 	    if(source == target)
 		//the path from any node to itself is 0
 		println(0);
 	    else if(loops[source] != null && loops[target] != null && loops[target] != loops[source]) {
 		//if the origin and target node are from different loops, there can be no match
-		//DEBUG("targets from different loops");
+		DEBUG("targets from different loops");
 		println("-1");
 	    }
 	    else if(loops[source] != null && loops[target] != null && loops[target] == loops[source]) {
-		//DEBUG("targets from the same loop");
+		DEBUG("targets from the same loop");
 		//if the origin and target node are from the same loop, there is an O(1) search
-		println(loops[source].dist(nodes[source], nodes[target]));
+		DEBUGF("S %d D %d L %d%n", loopIndex[source], loopIndex[target], loops[target].size());
+		println(loops[source].dist(loopIndex[source], loopIndex[target]));
 	    }
 	    else if(loops[source] != null && loops[target] == null) {
 		//if the origin is from a loop and the target isn't, there can be no match
-		//DEBUG("Path from loop to tree");
+		DEBUG("Path from loop to tree");
 		println("-1");
 	    }
-	    else if(loops[target] != null && loops[source] ==null) {
+	    else if(loops[target] != null && loops[source] == null) {
 		//we are 100% sure that there should be an associated treenode
 		TreeNode tn = treeNodes[source];
 		//figure out which tree it belongs to
@@ -236,21 +382,22 @@ public class QuickLinks {
 
 		//the things are from different loops
 		if(destLoop != loops[target]) {
-		    //DEBUG("items from different loops after tree traversal");
+		    DEBUG("items from different loops after tree traversal");
 		    println(-1);
 		    continue;
 		}
 
 		//now we need to find out how to get ourselves in to the loop to do some of that math
 		Node fin = destTree.getHead();
+		int ft = fin.getTarget();
 
 		//now we find the dist within the loop
-		int height = loops[target].dist(nodes[fin.getTarget()], nodes[target]);
-		//DEBUG("HEIGHT: " + height);
+		int height = loops[target].dist(loopIndex[ft], loopIndex[target]);
+		DEBUG("HEIGHT: " + height);
 
 		height += tn.getHeight();
-		//DEBUG("HEIGHT REVISED: " + height);
-		//DEBUG("path from tree to loop");
+		DEBUG("HEIGHT REVISED: " + height);
+		DEBUG("path from tree to loop");
 		println(height);
 	    }
 	    else if(loops[target] == null && loops[source] == null) {
@@ -259,18 +406,21 @@ public class QuickLinks {
 		TreeNode dst = treeNodes[target];
 
 		if(src.getID() != dst.getID()) {
-		    //DEBUG("trees do not match");
+		    DEBUG("trees do not match");
 		    println(-1);
 		    continue;
 		}
 
 		//now we need to ensure that the src is at a higher level than the dst
 		else if(src.getHeight() <= dst.getHeight()) {
-		    //DEBUG("incompatible heights");
+		    DEBUG("incompatible heights");
 		    println(-1);
 		    continue;
 		}
 		else {
+		    DEBUG("NEW TREE HEIGHT");
+		    int height = src.getTree().dist(src, dst);
+		    //println(height);
 		    int start_height = src.getHeight();
 		    while(src.getHeight() > dst.getHeight()) {
 			src = src.getChild();		    
@@ -284,30 +434,9 @@ public class QuickLinks {
 			//DEBUG("Height after traversal");
 			println(start_height - dst.getHeight());
 		    }
-		}			
-	    }
-	    else {
-		println(99);
-		//if the origin is part of a tree, and the target is part of a loop, we can confirm the
-		//existence of a connection on o(1), then solve it in the speed of a loop lookup
-		
-		
-		//if the origin is not from a loop, but target is, then we must search ALL ancestors of loop.
-		//either one of the ancestors of the target is the origin, or the result is -1
-		//further, if more than 100 nodes in a row are indexed,
-		//then we can make a chain and cache the result
-
-		//if both nodes are outside of loops, then the search is simple. Follow the target to either
-		//the root or the origin. There must be a fast way of doing this?
-
-		//fast way of doing this: we produce CHAINS
-		//how does a chain work? a chain is a collection of nodes(treemap(node, index)), which can be
-		//checked at O(1) through our list structure. Processing a chain is linear time.
-	    }
-	    t.split("FINISHED PROCESSING SCENARIO " + scenario);
-	}
-	
-	t.total("Finished processing of file. ");
+		}
+		}
+		}*/
     }
 
 
@@ -352,11 +481,11 @@ public class QuickLinks {
 		
 	    default :
 		System.err.
-		println("Usage: -se       = (show exceptions),\n" +
-			"       -d        = debug mode,\n" +
-			"       -t        = timer mode (debug lite),\n" +
-			"       -dt <int> = set timer digits");
-	    return;
+		    println("Usage: -se       = (show exceptions),\n" +
+			    "       -d        = debug mode,\n" +
+			    "       -t        = timer mode (debug lite),\n" +
+			    "       -dt <int> = set timer digits");
+		return;
 	    }
 	}
 	try {
@@ -508,7 +637,7 @@ public class QuickLinks {
 
 		while(splitStr.length() < 9 + DEBUG_TIME_MAGNITUDE)
 		    splitStr.insert(0, '0');
-		    //splitStr = "0" + splitStr;
+		//splitStr = "0" + splitStr;
 		
 		//get the location of the decimal point
 		splitStr.insert(splitStr.length() - 9, '.');
@@ -533,7 +662,7 @@ public class QuickLinks {
 
 		while(splitStr.length() < 9 + DEBUG_TIME_MAGNITUDE)
 		    splitStr.insert(0, '0');
-		    //splitStr = "0" + splitStr;
+		//splitStr = "0" + splitStr;
 		
 		//get the location of the decimal point
 		splitStr.insert(splitStr.length() - 9, '.');
@@ -663,9 +792,9 @@ public class QuickLinks {
 	boolean res = false;
 
 	while(!ln.hasNextInt()) { //if the current line has no integer
-	                          //then we scan through until we find
-	                          //another valid line, or there are
-	                          //no more lines
+	    //then we scan through until we find
+	    //another valid line, or there are
+	    //no more lines
 	    while(sc.hasNextLine() && !(res = checkNextLine()));
 
 	    if(!sc.hasNextLine())
