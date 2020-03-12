@@ -19,5 +19,14 @@ do
     end=`date +%s.%N`
     runtime=$(python -c "print((${end} - ${start})/5.0)")
     echo $runtime
+
+    #now we want to see if the answer is valid
+    filename=$(basename -- "$FILE")
+    extension="${filename##*.}"
+    filename="${filename%.*}"
+    filename="data2/$filename.ans"
+    diff $filename tmp_out.out > differences
+    wc -l differences
+    rm differences
     echo
 done
