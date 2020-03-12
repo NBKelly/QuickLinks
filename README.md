@@ -35,8 +35,9 @@ Structures must terminate in **rings**
 
 ### Metrics
 A file is presented, `metric.sh`, which deals with reading metrics for the program. Each test is performed 5 times, then the scores are averaged.
+The metrics program also serves as a correctness checker - the output of the script with each execution is checked against the given output, and the number of differences (don't trust the number - I'm just running wc on the diff file) is given with each score. The target is 0 differences.
 
-Scores from execution on my machine (ubuntu, AMD Ryzen 3 @ 4x3.1GHz) are presebted in the `Metrics.txt` file.
+Scores from execution on my machine (ubuntu, AMD Ryzen 3 @ 4x3.1GHz) are presented in the `Metrics.txt` file. In summary, thorns has the worst execution time, but the scores are roughly linear. Execution time for a 100,000 x 100,000 file is about 12x longer than the execution time for a 10,000 x 10,000 file. 
 
 ### Examples
 A sample file has been constructed specifically for testing most of the possible scenarios. This is the `treeTest.txt` file. A pictorial representation of the data structure is given in the `treeTest.png` file, or below:
