@@ -33,6 +33,11 @@ Structures must terminate in **rings**
 6. Offset allows for eliminations at O(1) in cases where `offset(target) - offset(dest) > height(target) - height(dest)`
 7. Additionally, if `offset(target) == offset(dest) && width(target) != width(dest)`, then the two nodes cannot be related
 
+### Metrics
+A file is presented, `metric.sh`, which deals with reading metrics for the program. Each test is performed 5 times, then the scores are averaged.
+
+Scores from execution on my machine (ubuntu, AMD Ryzen 3 @ 4x3.1GHz) are presebted in the `Metrics.txt` file.
+
 ### Examples
 A sample file has been constructed specifically for testing most of the possible scenarios. This is the `treeTest.txt` file. A pictorial representation of the data structure is given in the `treeTest.png` file, or below:
 
