@@ -2,10 +2,10 @@
 Programming contest question - mass evaluation of chains in massive disjointed semi-cyclic data structure.
 
 ## Problem Description
-You are given the information to build a cyclic graph. This graph may contain up to **1,000,000 entries**. 
+You are given the information to build a cyclic graph. This graph may contain up to **100,000 entries**. 
 Each node in the graph points to **exactly one** node. This may include itself.
 
-You are then given a number of scenarios (up to **1,000,000**). 
+You are then given a number of scenarios (up to **100,000**). 
 Each scenario is composed of an origin node and a destination node. 
 The task for each scenario is to determine the distance from the origin node to the destination node. 
 The answer of -1 indicates that there is no valid path.
