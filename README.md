@@ -28,3 +28,7 @@ Structures must terminate in **rings**
 1. If each node in a tree has knowledge of it's height (counting from the loop), many cases can be done in O(1)
 2. If we take stock of the width of a tree at each node, we can also eliminate many cases in O(1) time. "Width" in this case refers to an ordered metric marking the number of times the tree has split
 3. No element at width N can join an element at width N + K, so every one of these cases can be eliminated in O(1) time
+4. The 'width' is to be taken as an identity element for each seperate split in the tree. Further cases can also be eliminated witht the branch offset
+5. Branch offset is stricly "number of links from leftmost"
+6. Offset allows for eliminations at O(1) in cases where offset(target) - offset(dest) > height(target) - height(dest)
+7. Additionally, if offset(target) == offset(dest) && width(target) != width(dest), then the two nodes cannot be related
