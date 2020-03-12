@@ -318,7 +318,7 @@ public class QuickLinks {
 			else {
 			    //DEBUG("NEW TREE HEIGHT");
 			    int height = src.getTree().dist(src, dst);
-			    results[i] = height > -1 ? height : height;
+			    results[i] = height > -1 ? height : -1;
 			    //println(height);
 			    //int start_height = src.getHeight();
 			    //  while(src.getHeight() > dst.getHeight()) {
