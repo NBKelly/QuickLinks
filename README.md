@@ -35,6 +35,10 @@ Structures must terminate in **rings**
 
 ### Metrics
 A file is presented, `metric.sh`, which deals with reading metrics for the program. Each test is performed 5 times, then the scores are averaged.
+Additionally, times are read specifically for the interval required to pre-process each input. These values are not reliable for small files (jre overhead, bash overhead, time overhead), but they are useful in evaluating the performance of the program on larger systems. For the hardest problems, ~1 second is spent pre-processing, against 15 seconds post-processing. It appears that the biggest offender is tree-searching.
+
+I am evaluating a technique to reduce tree-lookup time by certain numeric factors in some cases, based on an evaluation of tree width, height and offset.
+
 The metrics program also serves as a correctness checker - the output of the script with each execution is checked against the given output, and the number of differences (don't trust the number - I'm just running wc on the diff file) is given with each score. The target is 0 differences.
 
 Scores from execution on my machine (ubuntu, AMD Ryzen 3 @ 4x3.1GHz) are presented in the `Metrics.txt` file. In summary, thorns has the worst execution time, but the scores are roughly linear. Execution time for a 100,000 x 100,000 file is about 12x longer than the execution time for a 10,000 x 10,000 file. 
