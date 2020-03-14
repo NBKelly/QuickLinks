@@ -23,7 +23,8 @@ public class QuickLinks {
     private static int DEBUG_TIME_MAGNITUDE = 3;
     private static boolean IGNORE_UNCLEAN = true;
     private static Exception exception = null;
-    
+
+    private static boolean onlyPreProcess = false;
     // Input:
     //   * NOTE: checking must be explicit (existence is assumed)
     //   hasNextInt()        -> boolean, input contains another int
@@ -219,6 +220,9 @@ public class QuickLinks {
 		nodeTrees.add(tree);
 	    }
 	}
+
+	if(onlyPreProcess)
+	    return;
 	
 	t.split("PROCESS SCENARIOS");
 
@@ -470,6 +474,7 @@ public class QuickLinks {
 	    case "-se" : IGNORE_UNCLEAN = false; break;
 	    case "-d"  : DEBUG = true; IGNORE_UNCLEAN = false;
 	    case "-t"  : TIMER = true; break;
+	    case "-bt" : onlyPreProcess = true; break;
 	    case "-dt" :
 		Scanner tst = null;
 		if(i + 1 < argv.length &&
@@ -507,6 +512,8 @@ public class QuickLinks {
 		    while(hasNextLine()) {
 			if(ct < 5)
 			    remlines.append(nextLine() + "\n");
+			else
+			    break;
 			ct++;
 		    }
 
