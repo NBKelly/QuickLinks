@@ -131,7 +131,6 @@ public class QuickLinks {
 	ArrayList<Loop> loopList = new ArrayList<Loop>();
 	int[] loopIndex = new int[num_nodes];
 	TreeNode[] treeNodes = new TreeNode[num_nodes];
-	ArrayList<NodeTree> nodeTrees = new ArrayList<>();
 	TEBUG("Arrays allocated");
 	
 	for(int index = 0; index < num_nodes; index++) {
@@ -215,9 +214,7 @@ public class QuickLinks {
 		    DEBUGF("NODE %d HEIGHT %d TREE %d CHILD %d WIDTH %d%n", tn.getNode().getID(),
 			   tn.getHeight(), tn.getID(), tn.getChild() != null ? tn.getChild().getNode().getID()
 			   : -1, tn.getWidth());
-		}
-
-		nodeTrees.add(tree);
+		}		
 	    }
 	}
 
