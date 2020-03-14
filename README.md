@@ -41,7 +41,8 @@ I am evaluating a technique to reduce tree-lookup time by certain numeric factor
 
 The metrics program also serves as a correctness checker - the output of the script with each execution is checked against the given output, and the number of differences (don't trust the number - I'm just running wc on the diff file) is given with each score. The target is 0 differences.
 
-Scores from execution on my machine (ubuntu, AMD Ryzen 3 @ 4x3.1GHz) are presented in the `Metrics.txt` file. In summary, thorns has the worst execution time, but the scores are roughly linear. Execution time for a 100,000 x 100,000 file is about 12x longer than the execution time for a 10,000 x 10,000 file. 
+Scores from execution on my machine (ubuntu, AMD Ryzen 3 @ 4x3.1GHz) are presented in the `Metrics.txt` file. In summary, thorns has the worst execution time, but the scores are roughly linear. Execution time for a 100,000 x 100,000 file is about 12x longer than the execution time for a 10,000 x 10,000 file. This leads me to believe that each lookup is roughly O(N log N). Doing the math (10k log2 10k vs 100k log2 100k), this would seem roughly correct. 
+
 
 ### Examples
 A sample file has been constructed specifically for testing most of the possible scenarios. This is the `treeTest.txt` file. A pictorial representation of the data structure is given in the `treeTest.png` file, or below:
