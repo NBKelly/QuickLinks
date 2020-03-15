@@ -65,9 +65,9 @@ public class QuickLinks {
 	 *   The next B lines consist of two nodes, a target and a destination. For each of these lines, we wish to output the length of the path from the target to the destination node,
 	 *    or -1 if there is no path
 	 */
-
 	Timer t = new Timer().start();
-	
+
+	//first two values in the file are the number of nodes and the number of scenarios
 	int num_nodes = nextInt();
 	int num_scenarios = nextInt();
 
@@ -84,6 +84,7 @@ public class QuickLinks {
 	 *    getID()          -> int
 	 *    getTarget()      -> int
 	 */
+	//populate our set of nodes
 	Node[] nodes = new Node[num_nodes];
 	for(int i = 0; i < num_nodes; i++) {
 	    nodes[i] = new Node(i, nextInt());
@@ -92,7 +93,7 @@ public class QuickLinks {
 
 	DEBUGLINE();
 	TEBUG("Associating ancestors");
-	//inverted node list
+	//we invert our list and turn it into a set of trees containing ancestors
 	ArrayList<TreeSet<Node>> ancestors = new ArrayList<TreeSet<Node>>(num_nodes);
 	for(int i = 0; i < num_nodes; i++)
 	    ancestors.add(null);
@@ -105,6 +106,7 @@ public class QuickLinks {
 	    ancestors.get(target).add(c);
 	}
 
+	//only if debug mode is enabled - tell us about the ancestors
 	if(DEBUG) {
 	    for(int i = 0; i < num_nodes; i++) {
 		DEBUGF("Ancestors of %d: ", i);
@@ -123,7 +125,7 @@ public class QuickLinks {
 	//  there are three things that need to be done:
 	//  * we need to identify loops
 	//  * we need to identify paths leading to loops
-
+	//  * we need to allocate a good deal of space
 	TEBUG("Allocating array space");
 	boolean[] visited = new boolean[num_nodes];
 	boolean[] looped = new boolean[num_nodes];
@@ -132,7 +134,8 @@ public class QuickLinks {
 	int[] loopIndex = new int[num_nodes];
 	TreeNode[] treeNodes = new TreeNode[num_nodes];
 	TEBUG("Arrays allocated");
-	
+
+	//in linear time we can build a set of loops
 	for(int index = 0; index < num_nodes; index++) {
 	    //given any node, we can follow it through until we build a loop
 	    //because every node has a destination, and every destination is valid,
@@ -170,7 +173,10 @@ public class QuickLinks {
 		    //Loop myLoop = new Loop(loop, DEBUG);
 		    Loop loop2 = new Loop(loop.size());
 		    int idx = 1;
-		    
+
+		    //set the id of the loop, and the ancestors of the loop
+		    //this allows us to distinguish between loops and determine parents
+		    //of loops
 		    for(Node n : loop) {
 			//get the id of the node
 			int nID = n.getID();
@@ -189,7 +195,6 @@ public class QuickLinks {
 		}
 	    }
 	}
-
 
 	DEBUG("Constructing Trees");
 		
@@ -223,10 +228,12 @@ public class QuickLinks {
 	
 	t.split("PROCESS SCENARIOS");
 
+	//inputs and outputs
 	int[] sc_a = new int[num_scenarios];
 	int[] sc_b = new int[num_scenarios];
 	int[] results = new int[num_scenarios];
-	
+
+	//associate inputs
 	for(int scenario = 0; scenario < num_scenarios; scenario++) {
 	    int source = nextInt();
 	    int target = nextInt();
@@ -234,7 +241,8 @@ public class QuickLinks {
 	    sc_a[scenario] = source;
 	    sc_b[scenario] = target;
 	}
-	
+
+	//in parallel, process each output and store it in results[i]
 	IntStream.range(0, num_scenarios)
 	    .parallel()
 	    .forEach(i -> {
@@ -317,147 +325,21 @@ public class QuickLinks {
 			    return;
 			}
 			else {
-			    //DEBUG("NEW TREE HEIGHT");
 			    int height = src.getTree().dist(src, dst);
 			    results[i] = height > -1 ? height : -1;
-			    //println(height);
-			    //int start_height = src.getHeight();
-			    //  while(src.getHeight() > dst.getHeight()) {
-			    //  src = src.getChild();		    
-			    //  }
-			    //
-			    //  if(src != dst) {
-			    //  //DEBUG("incompatible heights after traversal");
-			    //  println(-1);
-			    //  }
-			    //  else {
-			    //  //DEBUG("Height after traversal");
-			    //  println(start_height - dst.getHeight());
-			    //  }
 			}			
 		    }
 		    else {
 			//we should never be able to get here
-			//println(-99);
+			throw new Exception("Invalid state - see line 326");
 		    }		
 		}
 		);
 	for(int r : results)
 	    println(r);
 	t.total("Finished processing of file. ");
-	/*
-	//step one is to go scenario by scenario	
-	for(int scenario = 0; scenario < num_scenarios; scenario++) {
-	int source = nextInt();
-	int target = nextInt();
-	
-	//DEBUGF("%nProcessing link from %d to %d%n", source, target);
-	
-	    //there are several assumptions that may be made:
-	    if(source == target)
-		//the path from any node to itself is 0
-		println(0);
-	    else if(loops[source] != null && loops[target] != null && loops[target] != loops[source]) {
-		//if the origin and target node are from different loops, there can be no match
-		DEBUG("targets from different loops");
-		println("-1");
-	    }
-	    else if(loops[source] != null && loops[target] != null && loops[target] == loops[source]) {
-		DEBUG("targets from the same loop");
-		//if the origin and target node are from the same loop, there is an O(1) search
-		DEBUGF("S %d D %d L %d%n", loopIndex[source], loopIndex[target], loops[target].size());
-		println(loops[source].dist(loopIndex[source], loopIndex[target]));
-	    }
-	    else if(loops[source] != null && loops[target] == null) {
-		//if the origin is from a loop and the target isn't, there can be no match
-		DEBUG("Path from loop to tree");
-		println("-1");
-	    }
-	    else if(loops[target] != null && loops[source] == null) {
-		//we are 100% sure that there should be an associated treenode
-		TreeNode tn = treeNodes[source];
-		//figure out which tree it belongs to
-		NodeTree destTree = tn.getTree();
-		//figure out the destination loop
-		Loop destLoop = destTree.getLoop();
-
-		//the things are from different loops
-		if(destLoop != loops[target]) {
-		    DEBUG("items from different loops after tree traversal");
-		    println(-1);
-		    continue;
-		}
-
-		//now we need to find out how to get ourselves in to the loop to do some of that math
-		Node fin = destTree.getHead();
-		int ft = fin.getTarget();
-
-		//now we find the dist within the loop
-		int height = loops[target].dist(loopIndex[ft], loopIndex[target]);
-		DEBUG("HEIGHT: " + height);
-
-		height += tn.getHeight();
-		DEBUG("HEIGHT REVISED: " + height);
-		DEBUG("path from tree to loop");
-		println(height);
-	    }
-	    else if(loops[target] == null && loops[source] == null) {
-		//check if both of the things are from the same tree
-		TreeNode src = treeNodes[source];
-		TreeNode dst = treeNodes[target];
-
-		if(src.getID() != dst.getID()) {
-		    DEBUG("trees do not match");
-		    println(-1);
-		    continue;
-		}
-
-		//now we need to ensure that the src is at a higher level than the dst
-		else if(src.getHeight() <= dst.getHeight()) {
-		    DEBUG("incompatible heights");
-		    println(-1);
-		    continue;
-		}
-		else {
-		    DEBUG("NEW TREE HEIGHT");
-		    int height = src.getTree().dist(src, dst);
-		    //println(height);
-		    int start_height = src.getHeight();
-		    while(src.getHeight() > dst.getHeight()) {
-			src = src.getChild();		    
-		    }
-		    
-		    if(src != dst) {
-			//DEBUG("incompatible heights after traversal");
-			println(-1);
-		    }
-		    else {
-			//DEBUG("Height after traversal");
-			println(start_height - dst.getHeight());
-		    }
-		}
-		}
-		}*/
     }
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-	
     /* ^^^^ YOUR WORK
      *
      * LIB IMPLEMENTATIONS BELOW HERE
