@@ -23,7 +23,7 @@ public class QuickLinks {
     private static int DEBUG_TIME_MAGNITUDE = 3;
     private static boolean IGNORE_UNCLEAN = true;
     private static Exception exception = null;
-
+    private static boolean useNTR = true;
     private static boolean onlyPreProcess = false;
     // Input:
     //   * NOTE: checking must be explicit (existence is assumed)
@@ -208,7 +208,7 @@ public class QuickLinks {
 		    continue;
 		NodeTree tree = new NodeTree(loop);
 		DEBUG("Assembling tree");
-		tree.assemble(n, ancestors);
+		tree.assemble(n, ancestors, useNTR);
 		for(TreeNode tn : tree.getNodes()) {
 		    treeNodes[tn.getNode().getID()] = tn;
 		    DEBUGF("NODE %d HEIGHT %d TREE %d CHILD %d WIDTH %d%n", tn.getNode().getID(),
@@ -472,6 +472,7 @@ public class QuickLinks {
 	    case "-d"  : DEBUG = true; IGNORE_UNCLEAN = false;
 	    case "-t"  : TIMER = true; break;
 	    case "-bt" : onlyPreProcess = true; break;
+	    case "-intr" : useNTR = false; break;
 	    case "-dt" :
 		Scanner tst = null;
 		if(i + 1 < argv.length &&
@@ -486,6 +487,8 @@ public class QuickLinks {
 		    println("Usage: -se       = (show exceptions),\n" +
 			    "       -d        = debug mode,\n" +
 			    "       -t        = timer mode (debug lite),\n" +
+			    "       -bt       = break-tree (only preprocess),\n" +
+			    "       -intr     = ignore N-Tree reductions,\n" + 
 			    "       -dt <int> = set timer digits");
 		return;
 	    }

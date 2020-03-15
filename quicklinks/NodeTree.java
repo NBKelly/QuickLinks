@@ -43,12 +43,13 @@ public class NodeTree {
 	}
     }
     
-    public void assemble(Node node, ArrayList<TreeSet<Node>> ancestors) {
+    public void assemble(Node node, ArrayList<TreeSet<Node>> ancestors, boolean ntr) {
 	head = new TreeNode(ID, node, 1, null, this, 0, 0);	
 	assemble_inline(head, 1, ancestors, width);
 	int factor = 1 + (int)Math.sqrt(Math.min(2*max_height, Math.min(maximum_offset, width)) - 2);
 	//System.out.printf("H: %d, MO: %d, MW: %d, F: %d%n", max_height, maximum_offset, width, factor);
-	n_cr(factor);
+	if(ntr)
+	    n_cr(factor);
     }
 
     private void n_cr(int factor) {
