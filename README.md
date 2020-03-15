@@ -1,5 +1,5 @@
 # QuickLinks
-Programming contest question - mass evaluation of chains in massive disjointed semi-cyclic data structure.
+Programming contest question - mass evaluation of chains in massive disjointed semi-cyclic data structure. A detailed problem description can be found on this page: https://progcontest.aut.ac.nz/index.php/9-results/47-contest-report-2019
 
 ## Problem Description
 You are given the information to build a cyclic graph. This graph may contain up to **100,000 entries**. 
