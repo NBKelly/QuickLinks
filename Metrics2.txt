@@ -1,0 +1,95 @@
+data2/001-small.001-simple-1.in
+Nodes Scenarios
+3 6
+Total:  0.150062704086
+Pre:    0.154495239258
+Post:   -0.004432535172
+0 differences
+
+data2/001-small.002-medium-loop.in
+Nodes Scenarios
+10 90
+Total:  0.205791711807
+Pre:    0.157311677933
+Post:   0.048480033874
+0 differences
+
+data2/001-small.003-disconnected.in
+Nodes Scenarios
+10 90
+Total:  0.216555118561
+Pre:    0.155985832214
+Post:   0.060569286347
+0 differences
+
+data2/002-gen-small.001-random-n-10.in
+Nodes Scenarios
+10 10
+Total:  0.158646249771
+Pre:    0.156605148315
+Post:   0.002041101456
+0 differences
+
+data2/004-gen-large.001-random-n-1e4.in
+Nodes Scenarios
+10000 10000
+Total:  1.16560130119
+Pre:    0.40148267746
+Post:   0.76411862373
+0 differences
+
+data2/004-gen-large.002-line-n-1e4.in
+Nodes Scenarios
+10000 10000
+Total:  1.33280448914
+Pre:    0.383155679703
+Post:   0.949648809437
+0 differences
+
+data2/004-gen-large.003-cycle-n-1e4.in
+Nodes Scenarios
+10000 10000
+Total:  1.15163650513
+Pre:    0.38383936882
+Post:   0.76779713631
+0 differences
+
+data2/004-gen-large.004-broom-n-1e5.in
+Nodes Scenarios
+100000 100000
+Total:  17.1214944363
+Pre:    1.00675535202
+Post:   16.1147390843
+0 differences
+
+data2/004-gen-large.005-thorns-n-1e5.in
+Nodes Scenarios
+100000 100000
+Total:  17.1054464817
+Pre:    1.0686565876
+Post:   16.0367898941
+0 differences
+
+data2/004-gen-large.006-thorns-cycle-n-1e5.in
+Nodes Scenarios
+100000 100000
+Total:  15.5793111801
+Pre:    1.10178351402
+Post:   14.4775276661
+0 differences
+
+data2/004-gen-large.007-tree-1e5.in
+Nodes Scenarios
+100000 100000
+Total:  15.3661536217
+Pre:    1.01023416519
+Post:   14.3559194565
+0 differences
+
+data2/004-gen-large.008-triangle-1e5.in
+Nodes Scenarios
+100000 100000
+Total:  15.7352366924
+Pre:    1.01493835449
+Post:   14.7202983379
+0 differences
