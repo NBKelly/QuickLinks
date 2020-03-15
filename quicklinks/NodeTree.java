@@ -20,8 +20,14 @@ public class NodeTree {
     ArrayList<TreeNode>  nodes = new ArrayList<>();
     //these are all the branches for our tree. We can do a little bit of arithmetic to fix these things together
     ArrayList<TreeNode> branch = new ArrayList<TreeNode>();
+    ArrayList<TreeNode> N_branch = new ArrayList<TreeNode>();
+    boolean use_n_branch = false;
+    int N = 8;
+    int maximum_offset = 0;
+    int max_height = 0;
     Loop targetLoop;
     int width = 0;
+    
     public Loop getLoop() {
 	return targetLoop;
     }
@@ -40,8 +46,45 @@ public class NodeTree {
     public void assemble(Node node, ArrayList<TreeSet<Node>> ancestors) {
 	head = new TreeNode(ID, node, 1, null, this, 0, 0);	
 	assemble_inline(head, 1, ancestors, width);
+	int factor = 1 + (int)Math.sqrt(Math.min(2*max_height, Math.min(maximum_offset, width)) - 2);
+	//System.out.printf("H: %d, MO: %d, MW: %d, F: %d%n", max_height, maximum_offset, width, factor);
+	n_cr(factor);
     }
 
+    private void n_cr(int factor) {
+	if(factor <= 5) {
+	    return;
+	}
+
+	use_n_branch = true;
+	TreeNode rootBranch = branch.get(0);
+	for(TreeNode targetNode : branch) {	    
+	    if(targetNode == rootBranch) {
+		N_branch.add(null);
+		continue;
+	    }
+
+	    boolean target_found = false;
+	    TreeNode branch_red = targetNode;
+	    //what we want to do is get the branch that's FACTOR branches away
+	    for(int reduction = 0; reduction < factor; reduction++) {
+		branch_red = branch.get(branch_red.getWidth());
+		int branch_red_width = branch_red.getWidth();
+		TreeNode nc = branch_red.getChild();
+		branch_red = nc;
+		
+		//if it's on width 0, then we can just abort
+		if(branch_red.getWidth() == rootBranch.getWidth()) {
+		    target_found = true;
+		    N_branch.add(branch_red);
+		    break;
+		}		
+	    }
+	    if(!target_found)
+		N_branch.add(branch_red);
+	}
+    }
+    
     //this is fast even for big lines!
     private void assemble_inline(TreeNode node, int height, ArrayList<TreeSet<Node>> ancestors, int _width) {
 	LinkedList<TreeNode> deck = new LinkedList<TreeNode>();
@@ -53,7 +96,7 @@ public class NodeTree {
 	    int identity = node.getNode().getID();
 	    TreeSet<Node> idAncestors = ancestors.get(identity);
 	    //System.err.println("Assemble at width " + width + ", pass " + pass++);
-
+	    max_height = Math.max(max_height, height + 1);
 	    if(idAncestors != null) {
 		int width_ext = 0;
 		for(Node n : idAncestors) {
@@ -68,6 +111,8 @@ public class NodeTree {
 		    else {
 			width = width + 1;
 			TreeNode next = new TreeNode(ID, n, height + 1, node, this, width, offset + 1);
+			if(offset + 1 > maximum_offset)
+			    maximum_offset = offset + 1;
 			branch.add(next);
 			//branch.put(width, next);
 			deck.add(next);
@@ -84,38 +129,6 @@ public class NodeTree {
 	    _width = node.getWidth();
 	}
     }
-
-    //deprecated: recursive method of solving doesn't work for big lines
-    /*private void assemble(TreeNode node, int height, ArrayList<TreeSet<Node>> ancestors, int _width) {
-	nodes.add(node);
-	int identity = node.getNode().getID();
-	TreeSet<Node> idAncestors = ancestors.get(identity);
-	System.err.println("assemble at width " + width + " " + (ctr++));
-	if(idAncestors != null) {
-	    int width_ext = 0;
-	    for(Node n : idAncestors) {
-		if(width_ext == 0) {
-		    TreeNode next = new TreeNode(ID, n, height + 1, node, this, _width);
-		    assemble(next, height + 1, ancestors, _width);
-		} else {
-		    width = width + 1;
-		    TreeNode next = new TreeNode(ID, n, height + 1, node, this, width);
-		    branch.put(width, next);
-		    assemble(next, height + 1, ancestors, width);
-		}
-		width_ext++;
-	    }
-	}
-	System.err.println("Done at ctr " + ctr);
-	}*/
-
-    //a note on tree resolution: given a width, we can instantly lookup where the next branch is
-    //given that branch, we can follow
-    //given a source and dest, we follow branches until:
-    //additionally, we can instantly discount a tree if the dest has a higher width than the origin
-    //width(origin) == width(dest)
-    //or
-    //height(origin) < height(dest)
 
     public Node getHead() {
 	return head.getNode();
@@ -138,6 +151,28 @@ public class NodeTree {
 	
 	int original_height = origin.getHeight();
 
+	if(use_n_branch) {
+	    //first we try the n_branch
+	    while(origin.getWidth() > destination.getWidth() && origin.getHeight() > destination.getHeight()) {
+		TreeNode nn = N_branch.get(origin.getWidth());
+		if(nn == null)
+		    break;
+		if(nn == origin)
+		    nn = nn.getChild();
+		if(nn == null)
+		    break;
+
+		if(nn.getOffset() < destination.getOffset())
+		    break;
+		else if (nn.getOffset() <= destination.getOffset() && nn.getWidth() != destination.getWidth())
+		    break;
+		else {
+		    origin = nn;
+		    continue;
+		}
+	    }
+	}
+	
 	while(origin.getWidth() > destination.getWidth() && origin.getHeight() > destination.getHeight()) {
 	    TreeNode nn = branch.get(origin.getWidth());
 	    if(nn == origin)
@@ -161,5 +196,4 @@ public class NodeTree {
 
 	return -5;
     }
-
 }
